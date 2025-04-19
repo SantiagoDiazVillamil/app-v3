@@ -117,10 +117,9 @@ if st.button("Post"):
         pred = modelo.predict(vector)
 
         if see_vector:
-            st.markdown("<b>Vector representation:</b>", unsafe_allow_html=True)
-            st.write(vector)
-
-        st.markdown(f"<div class='result-box'><b>Model prediction:</b> {dict_pred[pred[0]]}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='result-box'><b>Model prediction:</b> {dict_pred[pred[0]]} <br><b>Vector representation:</b>{vector}</div>", unsafe_allow_html=True)
+        else:
+            st.markdown(f"<div class='result-box'><b>Model prediction:</b> {dict_pred[pred[0]]}</div>", unsafe_allow_html=True)
 
 # ---------------- FOOTER ------------------
 st.markdown("""
