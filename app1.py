@@ -105,7 +105,7 @@ st.components.v1.html(f"""
 
 # ---------------- INPUT OCULTO PARA STREAMLIT ------------------
 tweet = st.text_area("What's happening?", key="hidden_input", )#label_visibility="collapsed")
-
+see_vector = st.checkbox("See Tweet vectorization")
 # ---------------- PREDICCIÓN ------------------
 if st.button("Post"):
     dict_pred={1:'Positive Tweet',-1:'Negative Tweet'}
@@ -115,12 +115,17 @@ if st.button("Post"):
         texto_limpio = limpiar_texto(tweet)
         vector = vectorizer.transform([texto_limpio]).toarray()
         pred = modelo.predict(vector)
+
+        if see_vector:
+            st.markdown("<b>Vector representation:</b>", unsafe_allow_html=True)
+            st.write(vector)
+
         st.markdown(f"<div class='result-box'><b>Model prediction:</b> {dict_pred[pred[0]]}</div>", unsafe_allow_html=True)
 
 # ---------------- FOOTER ------------------
 st.markdown("""
     <hr>
     <div style='text-align: center; color: #8899A6;'>
-        © MOET-2025 · X (Twitter) Simulation with Streamlit
+        © MOET-2025i · X (Twitter) Simulation with Streamlit
     </div>
 """, unsafe_allow_html=True)
