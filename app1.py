@@ -125,4 +125,8 @@ if tweet.strip():
 
 # Footer
 st.markdown("""
-    <
+    <hr>
+    <div style='text-align: center; color: #8899A6;'>
+        © 2025 · Simulación de X (Twitter) con Streamlit
+    </div>
+""", unsafe_allow_html=True)
