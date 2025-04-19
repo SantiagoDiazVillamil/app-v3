@@ -1,63 +1,76 @@
 import streamlit as st
-from PIL import Image
+import joblib
+import re
+from nltk.corpus import stopwords
 
-# Configuración de página
-st.set_page_config(page_title="Mi Página Web", page_icon="🌐", layout="centered")
+# ---------------- CONFIGURACIÓN ------------------
+st.set_page_config(page_title="Tweet Predictor", page_icon="🐦", layout="centered")
 
-# Estilos CSS
+# ---------------- ESTILOS ------------------
 st.markdown("""
     <style>
-        .main {
-            background-color: #f9f9f9;
+        body {
+            background-color: #15202B;
+            color: white;
         }
-        .title {
-            text-align: center;
-            font-size: 40px;
-            color: #2c3e50;
-            margin-bottom: 5px;
+        .tweet-box {
+            background-color: #192734;
+            border: 1px solid #38444D;
+            border-radius: 10px;
+            padding: 10px;
         }
-        .subtitle {
-            text-align: center;
-            font-size: 18px;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-        }
-        .section-title {
-            color: #34495e;
-            font-size: 24px;
-            margin-top: 30px;
+        .tweet-button {
+            background-color: #1DA1F2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 999px;
+            padding: 10px 20px;
+            margin-top: 10px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Encabezado principal
-st.markdown('<div class="title">🌐 Bienvenido a Mi Página Web</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Una plantilla elegante y amigable para cualquier propósito</div>', unsafe_allow_html=True)
+# ---------------- MODELO Y VECTORIZADOR ------------------
+@st.cache_resource
+def cargar_modelo():
+    modelo = joblib.load("modelo_ann.pkl")
+    vectorizer = joblib.load("vectorizer.pkl")
+    return modelo, vectorizer
 
-# Imagen decorativa (puedes usar tu logo o imagen propia)
-st.image("https://source.unsplash.com/800x300/?technology,code", use_column_width=True)
+modelo, vectorizer = cargar_modelo()
 
-# Sección: Sobre mí o propósito
-st.markdown('<div class="section-title">📌 Acerca de este sitio</div>', unsafe_allow_html=True)
-st.write("""
-Este es un ejemplo de cómo puedes construir una aplicación web sencilla con [Streamlit](https://streamlit.io/). 
-Puedes usarla para:
-- Mostrar información de un proyecto
-- Crear un portafolio personal
-- Hacer dashboards interactivos
-- O simplemente compartir contenido de forma elegante
-""")
+# ---------------- LIMPIEZA DE TEXTO ------------------
+stop_words = stopwords.words('english')
+stop_words += [k.replace("'", '') for k in stop_words]
 
-# Sección: Interacción
-st.markdown('<div class="section-title">🧭 Interacción del usuario</div>', unsafe_allow_html=True)
+def limpiar_texto(texto):
+    texto = texto.replace("'", '').lower()
+    texto = " ".join([k for k in texto.split() if k not in stop_words])
+    texto = re.sub(r'[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]', '', texto)
+    return texto
 
-nombre = st.text_input("¿Cómo te llamas?")
-color = st.selectbox("¿Cuál es tu color favorito?", ["Azul", "Verde", "Rojo", "Amarillo", "Negro", "Otro"])
+# ---------------- UI ------------------
+st.markdown("""
+    <h2 style='color: white; text-align: center;'>🐦 Tweet Predictor</h2>
+    <p style='text-align: center; color: #8899A6;'>Ingresa tu tweet y predice el resultado con nuestro modelo</p>
+""", unsafe_allow_html=True)
 
-if st.button("Enviar"):
-    st.success(f"¡Hola, {nombre}! Genial que te guste el color {color} 🎨")
+with st.container():
+    tweet = st.text_area("", placeholder="¿Qué está pasando?", height=100)
 
-# Sección: Footer
-st.markdown("---")
-st.markdown("© 2025 · Hecho con ❤️ usando Streamlit")
+    if st.button("Twittear", help="Publicar tweet", use_container_width=True):
+        if tweet.strip() == "":
+            st.warning("Por favor escribe algo para twittear.")
+        else:
+            texto_limpio = limpiar_texto(tweet)
+            vector = vectorizer.transform([texto_limpio]).toarray()
+            pred = modelo.predict(vector)
+            st.success(f"🔮 Predicción del modelo: {pred[0]}")
 
+st.markdown("""
+    <hr>
+    <div style='text-align: center; color: #8899A6;'>
+        © 2025 · Simulación de X (Twitter) con Streamlit
+    </div>
+""", unsafe_allow_html=True)
