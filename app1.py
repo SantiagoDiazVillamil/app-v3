@@ -1,7 +1,7 @@
 import streamlit as st
 import joblib
 import re
-from nltk.corpus import stopwords
+#from nltk.corpus import stopwords
 
 # ---------------- CONFIGURACIÓN ------------------
 st.set_page_config(page_title="Tweet Predictor", page_icon="🐦", layout="centered")
@@ -41,8 +41,11 @@ def cargar_modelo():
 modelo, vectorizer = cargar_modelo()
 
 # ---------------- LIMPIEZA DE TEXTO ------------------
-stop_words = stopwords.words('english')
-stop_words += [k.replace("'", '') for k in stop_words]
+# stop_words = stopwords.words('english')
+# stop_words += [k.replace("'", '') for k in stop_words]
+with open("stopwords_en.txt", "r", encoding="utf-8") as f:
+    stop_words = [line.strip() for line in f.readlines()]
+
 
 def limpiar_texto(texto):
     texto = texto.replace("'", '').lower()
