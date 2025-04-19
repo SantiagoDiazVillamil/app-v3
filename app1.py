@@ -1,35 +1,11 @@
 import streamlit as st
 import joblib
 import re
-#from nltk.corpus import stopwords
+from PIL import Image
+import base64
 
 # ---------------- CONFIGURACIÓN ------------------
 st.set_page_config(page_title="Tweet Predictor", page_icon="🐦", layout="centered")
-
-# ---------------- ESTILOS ------------------
-st.markdown("""
-    <style>
-        body {
-            background-color: #15202B;
-            color: white;
-        }
-        .tweet-box {
-            background-color: #192734;
-            border: 1px solid #38444D;
-            border-radius: 10px;
-            padding: 10px;
-        }
-        .tweet-button {
-            background-color: #1DA1F2;
-            color: white;
-            font-weight: bold;
-            border: none;
-            border-radius: 999px;
-            padding: 10px 20px;
-            margin-top: 10px;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # ---------------- MODELO Y VECTORIZADOR ------------------
 @st.cache_resource
@@ -41,11 +17,8 @@ def cargar_modelo():
 modelo, vectorizer = cargar_modelo()
 
 # ---------------- LIMPIEZA DE TEXTO ------------------
-# stop_words = stopwords.words('english')
-# stop_words += [k.replace("'", '') for k in stop_words]
 with open("stopwords_en.txt", "r", encoding="utf-8") as f:
     stop_words = [line.strip() for line in f.readlines()]
-
 
 def limpiar_texto(texto):
     texto = texto.replace("'", '').lower()
@@ -53,24 +26,97 @@ def limpiar_texto(texto):
     texto = re.sub(r'[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]', '', texto)
     return texto
 
-# ---------------- UI ------------------
+# ---------------- ESTILOS ------------------
 st.markdown("""
-    <h2 style='color: white; text-align: center;'>🐦 Tweet Predictor</h2>
-    <p style='text-align: center; color: #8899A6;'>Ingresa tu tweet y predice el resultado con nuestro modelo</p>
+    <style>
+        .image-container {
+            position: relative;
+            text-align: center;
+        }
+
+        .tweet-textbox {
+            position: absolute;
+            top: 100px;
+            left: 160px;
+            width: 690px;
+            height: 90px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            resize: none;
+            z-index: 10;
+        }
+
+        .tweet-button {
+            position: absolute;
+            top: 220px;
+            left: 825px;
+            background-color: #1DA1F2;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 999px;
+            padding: 8px 24px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .result-box {
+            margin-top: 30px;
+            font-size: 18px;
+            background-color: #E8F5FD;
+            padding: 15px;
+            border-radius: 10px;
+            color: #0f1419;
+            text-align: center;
+        }
+    </style>
 """, unsafe_allow_html=True)
 
-with st.container():
-    tweet = st.text_area("", placeholder="¿Qué está pasando?", height=100)
+# ---------------- CABECERA ------------------
+st.markdown("<h2 style='text-align: center;'>🐦 Tweet Predictor</h2>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #8899A6;'>Simula un tweet y predice su clasificación con IA</p>", unsafe_allow_html=True)
 
-    if st.button("Twittear", help="Publicar tweet", use_container_width=True):
-        if tweet.strip() == "":
-            st.warning("Por favor escribe algo para twittear.")
-        else:
-            texto_limpio = limpiar_texto(tweet)
-            vector = vectorizer.transform([texto_limpio]).toarray()
-            pred = modelo.predict(vector)
-            st.success(f"🔮 Predicción del modelo: {pred[0]}")
+# ---------------- MOSTRAR IMAGEN ------------------
+st.markdown("<div class='image-container'>", unsafe_allow_html=True)
+image_path = "b79825e5-65fc-49d7-a8c9-5b91a47f3c36.png"
+st.image(image_path, use_column_width=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
+# ---------------- TEXTBOX Y BOTÓN FLOTANTES (HTML PURO) ------------------
+st.components.v1.html(f"""
+    <div style="position: relative; top: -610px; height: 0px;">
+        <textarea id="customText" class="tweet-textbox" placeholder="What’s happening?"></textarea>
+        <button onclick="sendTweet()" class="tweet-button">Post</button>
+    </div>
+    <script>
+        const txt = window.parent.document.querySelector('textarea[data-testid="stTextArea"]');
+        const customInput = document.getElementById("customText");
+        customInput.addEventListener("input", function() {{
+            txt.value = this.value;
+            txt.dispatchEvent(new Event("input", {{ bubbles: true }}));
+        }});
+        function sendTweet() {{
+            document.querySelector("button[kind=primary]").click();
+        }}
+    </script>
+""", height=0)
+
+# ---------------- INPUT OCULTO PARA STREAMLIT ------------------
+tweet = st.text_area("Tweet oculto", key="hidden_input", label_visibility="collapsed")
+
+# ---------------- PREDICCIÓN ------------------
+if st.button("Twittear"):
+    if tweet.strip() == "":
+        st.warning("Por favor escribe algo para twittear.")
+    else:
+        texto_limpio = limpiar_texto(tweet)
+        vector = vectorizer.transform([texto_limpio]).toarray()
+        pred = modelo.predict(vector)
+        st.markdown(f"<div class='result-box'>🔮 <b>Predicción del modelo:</b> {pred[0]}</div>", unsafe_allow_html=True)
+
+# ---------------- FOOTER ------------------
 st.markdown("""
     <hr>
     <div style='text-align: center; color: #8899A6;'>
