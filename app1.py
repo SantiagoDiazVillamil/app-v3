@@ -81,7 +81,7 @@ st.markdown("<p style='text-align: center; color: #8899A6;'>Simula un tweet y pr
 # ---------------- MOSTRAR IMAGEN ------------------
 st.markdown("<div class='image-container'>", unsafe_allow_html=True)
 image_path = "b79825e5-65fc-49d7-a8c9-5b91a47f3c36.png"
-st.image(image_path, use_column_width=True)
+st.image(image_path, use_container_width=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------------- TEXTBOX Y BOTÓN FLOTANTES (HTML PURO) ------------------
