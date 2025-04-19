@@ -104,17 +104,18 @@ st.components.v1.html(f"""
 """, height=0)
 
 # ---------------- INPUT OCULTO PARA STREAMLIT ------------------
-tweet = st.text_area("Tweet oculto", key="hidden_input", label_visibility="collapsed")
+tweet = st.text_area("What's happening?", key="hidden_input", )#label_visibility="collapsed")
 
 # ---------------- PREDICCIÓN ------------------
-if st.button("Twittear"):
+if st.button("Post"):
+    dict_pred={1:'Positive Tweet',-1:'Negative Tweet'}
     if tweet.strip() == "":
-        st.warning("Por favor escribe algo para twittear.")
+        st.warning("Please write something to post.")
     else:
         texto_limpio = limpiar_texto(tweet)
         vector = vectorizer.transform([texto_limpio]).toarray()
         pred = modelo.predict(vector)
-        st.markdown(f"<div class='result-box'>🔮 <b>Predicción del modelo:</b> {pred[0]}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='result-box'><b>Model prediction:</b> {dict_pred[pred[0]]}</div>", unsafe_allow_html=True)
 
 # ---------------- FOOTER ------------------
 st.markdown("""
